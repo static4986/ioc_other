@@ -1,0 +1,6 @@
+aop\aspect\ServiceScan.class
+annotation\Autowired_other.class
+annotation\Service_other.class
+annotation\Transaction_other.class
+aop\aspect\ServiceScan$2.class
+aop\aspect\ServiceScan$1.class
