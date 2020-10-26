@@ -1,10 +1,13 @@
 import enhancer.EnhancerAdvisor;
+import intercepe.CGLibIntercept;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import transaction.TransactionManager;
 
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.HashSet;
 
 public class Reflaction {
 
@@ -18,16 +21,43 @@ public class Reflaction {
         System.out.println(o);*/
 
 
+        /*Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(Class.forName("Student"));
+        CGLibIntercept cgLibIntercept = new CGLibIntercept(new HashSet<>());
+        enhancer.setCallback(cgLibIntercept);
+        Object cglibSingleton = enhancer.create();
+        Student student = (Student)cglibSingleton;
+        student.sayLenovo();
+        student.sayHuipu();
+        System.out.println(cglibSingleton);*/
+
+
+        /*Class<?> student = Class.forName("Student");
+        Student studentInstance = (Student)student.getConstructor().newInstance();
+        studentInstance.sayHuipu();
+        studentInstance.sayLenovo();*/
+        /*Object student = Class.forName("Student").getConstructor().newInstance();
+        Field[] fields = Class.forName("Student").getDeclaredFields();
+        for (int i = 0;i<fields.length;i++){
+            fields[i].setAccessible(true);
+            fields[i].set(student,"信纸");
+        }*/
+
+        Student student2 = new Student();
+        student2.setName("hello");
         Enhancer enhancer = new Enhancer();
-        Student student = new Student();
-        enhancer.setSuperclass(student.getClass());
+        CGLibIntercept cgLibIntercept = new CGLibIntercept(new HashSet<>());
+        enhancer.setSuperclass(student2.getClass());
         enhancer.setCallback(new MethodInterceptor() {
             @Override
-            public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
+            public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
                     try {
                         //事务增强
-                        Object o1 = methodProxy.invokeSuper(o, objects);
+                        TransactionManager.beginTransaction();
+                        System.out.println("增强型事务");
+                        Object o1 = proxy.invokeSuper(student2, args);
                         //事务提交
+                        TransactionManager.commit();
                         return o1;
                     } catch (Exception e) {
                         //事务回滚
@@ -36,24 +66,13 @@ public class Reflaction {
                         TransactionManager.rollBack();
                         throw e;
                     }
-            }
+                }
         });
         Object cglibSingleton = enhancer.create();
-        System.out.println(cglibSingleton);
-
-
-        Student su = new Student();
-        Student su1 = su.getClass().getConstructor().newInstance();
-        su1.sayHuipu();
-        su1.sayLenovo();
-
-
-        /*Class<?> student = Class.forName("Student");
-        Student studentInstance = (Student)student.getConstructor().newInstance();
-        studentInstance.sayHuipu();
-        studentInstance.sayLenovo();*/
-
-
+        Student student1 = (Student)cglibSingleton;
+        student1.sayLenovo();
+        student1.sayHuipu();
+        System.out.println(student1);
 
 
     }

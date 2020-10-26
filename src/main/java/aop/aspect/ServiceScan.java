@@ -5,6 +5,7 @@ package aop.aspect;
 import annotation.Autowired_other;
 import annotation.Service_other;
 import annotation.Transaction_other;
+import intercepe.CGLibIntercept;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -49,17 +50,18 @@ public class ServiceScan {
 			Method value = annotationClazz.getMethod("value");
 			//获取service_other的value方法返回值
             String valueStr = (String) value.invoke(serviceOther);
+            String key;
             if (null != valueStr && !valueStr.trim().equals("")) {
                 //注解value不为空，放入别名作为ke'y
-                singletonCache.put(valueStr.toLowerCase(), singleton);
+                key = valueStr.toLowerCase();
             } else {
                 //注解value为空，默认类名小写为key
-				String key = c.getName().substring(c.getName().lastIndexOf(".")+1);
-                singletonCache.put(key.toLowerCase(), singleton);
+				key = c.getName().substring(c.getName().lastIndexOf(".")+1).toLowerCase();
             }
+            singletonCache.put(key, singleton);
             //组装字段上的属性注入
             populate(singleton);
-            instantiateMethod(singleton);
+            instantiateMethod(key,singleton);
         }
     }
 
@@ -68,7 +70,7 @@ public class ServiceScan {
      * 实例化成员方法
      */
 
-    private static void instantiateMethod(Object singleton) {
+    private static void instantiateMethod(String key,Object singleton) {
         Method[] declaredMethods = singleton.getClass().getDeclaredMethods();
         //需要增强的方法
         Set<String> aopMethodSet = new HashSet<>();
@@ -108,32 +110,10 @@ public class ServiceScan {
             //cglib动态代理
             Enhancer enhancer = new Enhancer();
             enhancer.setSuperclass(singleton.getClass());
-            enhancer.setCallback(new MethodInterceptor() {
-                @Override
-                public Object intercept(Object o, Method method, Object[] objects, MethodProxy methodProxy) throws Throwable {
-                    if (aopMethodSet.contains(method.getName())) {
-                        try {
-                            //事务增强
-                            TransactionManager.beginTransaction();
-                            Object o1 = methodProxy.invokeSuper(o, objects);
-                            //事务提交
-                            TransactionManager.commit();
-                            return o1;
-                        } catch (Exception e) {
-                            //事务回滚
-                            e.printStackTrace();
-                            System.out.println("事务回滚");
-                            TransactionManager.rollBack();
-                            throw e;
-                        }
-                    } else {
-                        return o;
-                    }
-                }
-            });
+            CGLibIntercept cgLibIntercept = new CGLibIntercept(aopMethodSet);
+            enhancer.setCallback(cgLibIntercept);
             Object cglibSingleton = enhancer.create();
-            singletonCache.put(singleton.getClass().getSimpleName().toLowerCase(),cglibSingleton);
-
+            singletonCache.put(key.toLowerCase(),cglibSingleton);
         }
     }
 
@@ -148,9 +128,6 @@ public class ServiceScan {
         Field[] declaredFields = singletonClass.getDeclaredFields();
         for (int i = 0; i < declaredFields.length; i++) {
 			declaredFields[i].setAccessible(true);
-			if(declaredFields[i].getName().equals("name")){
-				declaredFields[i].set(singleton,"good");
-			}
         	//字段是被Autowired_other修饰的，放入缓冲池
             if (declaredFields[i].isAnnotationPresent(Autowired_other.class)) {
 
@@ -160,6 +137,8 @@ public class ServiceScan {
                 if (null == cacheSingleton) {
                     //不存在该对象，新增
                     Object newSingleton = declaredFields[i].getDeclaringClass().getConstructor().newInstance();
+                    //字段赋值
+                    declaredFields[i].set(singleton,newSingleton);
                     singletonCache.put(fieldKey.toLowerCase(), newSingleton);
                     //新增之后赋值为成员变量
 					cacheSingleton=newSingleton;
