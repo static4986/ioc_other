@@ -110,7 +110,7 @@ public class ServiceScan {
             //cglib动态代理
             Enhancer enhancer = new Enhancer();
             enhancer.setSuperclass(singleton.getClass());
-            CGLibIntercept cgLibIntercept = new CGLibIntercept(aopMethodSet);
+            CGLibIntercept cgLibIntercept = new CGLibIntercept(aopMethodSet,singleton);
             enhancer.setCallback(cgLibIntercept);
             Object cglibSingleton = enhancer.create();
             singletonCache.put(key.toLowerCase(),cglibSingleton);

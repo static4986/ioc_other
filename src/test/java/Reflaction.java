@@ -46,7 +46,7 @@ public class Reflaction {
         Student student2 = new Student();
         student2.setName("hello");
         Enhancer enhancer = new Enhancer();
-        CGLibIntercept cgLibIntercept = new CGLibIntercept(new HashSet<>());
+        //CGLibIntercept cgLibIntercept = new CGLibIntercept(new HashSet<>());
         enhancer.setSuperclass(student2.getClass());
         enhancer.setCallback(new MethodInterceptor() {
             @Override

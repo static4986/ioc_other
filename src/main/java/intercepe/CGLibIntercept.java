@@ -12,21 +12,24 @@ public class CGLibIntercept implements MethodInterceptor {
 
     private Set<String> aopMethodSet = new HashSet<>();
 
-    public CGLibIntercept(Set<String> aopMethodSet) {
+    private Object obj;
+
+    public CGLibIntercept(Set<String> aopMethodSet, Object obj) {
         this.aopMethodSet = aopMethodSet;
+        this.obj = obj;
     }
 
     @Override
-    public Object intercept(Object obj, Method method, Object[] args, MethodProxy proxy) throws Throwable {
+    public Object intercept(Object o, Method method, Object[] args, MethodProxy proxy) throws Throwable {
         if (aopMethodSet.contains(method.getName())) {
             try {
                 //事务增强
                 TransactionManager.beginTransaction();
                 System.out.println("增强型事务");
-                Object o1 = proxy.invokeSuper(obj, args);
+                Object invoke = proxy.invokeSuper(o, args);
                 //事务提交
                 TransactionManager.commit();
-                return o1;
+                return invoke;
             } catch (Exception e) {
                 //事务回滚
                 e.printStackTrace();
@@ -35,7 +38,7 @@ public class CGLibIntercept implements MethodInterceptor {
                 throw e;
             }
         } else {
-            System.out.println("非增强型事务"+method.getName());
+            System.out.println("非增强型事务" + method.getName());
             return proxy.invokeSuper(obj, args);
         }
     }
