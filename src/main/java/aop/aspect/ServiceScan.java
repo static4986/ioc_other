@@ -7,8 +7,6 @@ import annotation.Service_other;
 import annotation.Transaction_other;
 import intercepe.CGLibIntercept;
 import net.sf.cglib.proxy.Enhancer;
-import net.sf.cglib.proxy.MethodInterceptor;
-import net.sf.cglib.proxy.MethodProxy;
 import transaction.TransactionManager;
 
 import java.io.File;
@@ -108,11 +106,8 @@ public class ServiceScan {
             });
         } else {
             //cglib动态代理
-            Enhancer enhancer = new Enhancer();
-            enhancer.setSuperclass(singleton.getClass());
-            CGLibIntercept cgLibIntercept = new CGLibIntercept(aopMethodSet,singleton);
-            enhancer.setCallback(cgLibIntercept);
-            Object cglibSingleton = enhancer.create();
+            CGLibIntercept cgLibIntercept = new CGLibIntercept();
+            Object cglibSingleton = cgLibIntercept.getInstance(singleton,aopMethodSet);
             singletonCache.put(key.toLowerCase(),cglibSingleton);
         }
     }

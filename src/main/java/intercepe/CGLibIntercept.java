@@ -1,5 +1,6 @@
 package intercepe;
 
+import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
 import transaction.TransactionManager;
@@ -10,13 +11,17 @@ import java.util.Set;
 
 public class CGLibIntercept implements MethodInterceptor {
 
-    private Set<String> aopMethodSet = new HashSet<>();
+    private Set<String> aopMethodSet;
 
     private Object obj;
 
-    public CGLibIntercept(Set<String> aopMethodSet, Object obj) {
-        this.aopMethodSet = aopMethodSet;
+    public Object getInstance(Object obj,Set<String> aopMethodSet){
         this.obj = obj;
+        this.aopMethodSet = aopMethodSet;
+        Enhancer enhancer = new Enhancer();
+        enhancer.setSuperclass(obj.getClass());
+        enhancer.setCallback(this);
+        return enhancer.create();
     }
 
     @Override
@@ -26,7 +31,7 @@ public class CGLibIntercept implements MethodInterceptor {
                 //事务增强
                 TransactionManager.beginTransaction();
                 System.out.println("增强型事务");
-                Object invoke = proxy.invokeSuper(o, args);
+                Object invoke = method.invoke(obj, args);
                 //事务提交
                 TransactionManager.commit();
                 return invoke;
@@ -39,7 +44,7 @@ public class CGLibIntercept implements MethodInterceptor {
             }
         } else {
             System.out.println("非增强型事务" + method.getName());
-            return proxy.invokeSuper(obj, args);
+            return method.invoke(obj, args);
         }
     }
 }
