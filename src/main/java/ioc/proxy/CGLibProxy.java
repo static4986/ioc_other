@@ -1,5 +1,6 @@
-package intercepe;
+package ioc.proxy;
 
+import ioc.proxy.AbstractProxy;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -9,15 +10,18 @@ import java.lang.reflect.Method;
 import java.util.HashSet;
 import java.util.Set;
 
-public class CGLibIntercept implements MethodInterceptor {
+public class CGLibProxy extends AbstractProxy implements MethodInterceptor {
 
     private Set<String> aopMethodSet;
 
     private Object obj;
 
-    public Object getInstance(Object obj,Set<String> aopMethodSet){
-        this.obj = obj;
+    public CGLibProxy(Set<String> aopMethodSet, Object obj) {
         this.aopMethodSet = aopMethodSet;
+        this.obj = obj;
+    }
+
+    public Object proxy(){
         Enhancer enhancer = new Enhancer();
         enhancer.setSuperclass(obj.getClass());
         enhancer.setCallback(this);

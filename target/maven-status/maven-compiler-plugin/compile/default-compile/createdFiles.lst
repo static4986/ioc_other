@@ -1,6 +1,12 @@
+intercepe\CGLibIntercept.class
+test\TestService.class
 aop\aspect\ServiceScan.class
+transaction\TransactionManager.class
+annotation\Transaction_other.class
+test\TestDao.class
+aop\aspect\ServiceScan$1.class
+utils\JsonUtils.class
 annotation\Autowired_other.class
 annotation\Service_other.class
-annotation\Transaction_other.class
-aop\aspect\ServiceScan$2.class
-aop\aspect\ServiceScan$1.class
+utils\DruidUtils.class
+factory\ConnectionFactory.class

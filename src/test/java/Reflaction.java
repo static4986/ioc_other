@@ -1,5 +1,4 @@
 import enhancer.EnhancerAdvisor;
-import intercepe.CGLibIntercept;
 import net.sf.cglib.proxy.Enhancer;
 import net.sf.cglib.proxy.MethodInterceptor;
 import net.sf.cglib.proxy.MethodProxy;
@@ -42,8 +41,15 @@ public class Reflaction {
             fields[i].setAccessible(true);
             fields[i].set(student,"信纸");
         }*/
+        String property = System.getProperty("Reflaction.java");
+        System.out.println(property);
 
-        Student student2 = new Student();
+        String path1 = System.getProperty("user.dir");
+        System.out.println(path1);
+
+
+
+        /*Student student2 = new Student();
         student2.setName("hello");
         Enhancer enhancer = new Enhancer();
         //CGLibIntercept cgLibIntercept = new CGLibIntercept(new HashSet<>());
@@ -72,7 +78,7 @@ public class Reflaction {
         Student student1 = (Student)cglibSingleton;
         student1.sayLenovo();
         student1.sayHuipu();
-        System.out.println(student1);
+        System.out.println(student1);*/
 
 
     }
